@@ -9,16 +9,12 @@ const Orders = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const token = localStorage.getItem("token"); // Lấy token từ localStorage
-        if (!token) {
-          console.error("❌ Không tìm thấy token!");
-          return;
-        }
-  
+        const token = localStorage.getItem("token");  // Hoặc từ context nếu bạn lưu token ở đó
         const res = await axios.get("http://localhost:5000/api/orders", {
-          headers: { Authorization: `Bearer ${token}` }, // Gửi token trong header
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
-  
         setOrders(res.data);
       } catch (error) {
         console.error("❌ Lỗi khi lấy đơn hàng:", error.response?.data || error);
@@ -26,6 +22,7 @@ const Orders = () => {
         setLoading(false);
       }
     };
+    
   
     fetchOrders();
   }, []);
