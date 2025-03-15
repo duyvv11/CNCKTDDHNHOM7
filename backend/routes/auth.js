@@ -18,6 +18,7 @@ router.use(
 
 // Đăng ký (Không băm mật khẩu)
 router.post("/register", async (req, res) => {
+  console.log("da goi duoc ham dang ky :");
   try {
     const { email, password, role } = req.body;
 
