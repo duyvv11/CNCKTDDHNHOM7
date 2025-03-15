@@ -53,13 +53,14 @@
     padding: 20px;
   }
   /* Footer */
-.footer {
+  .footer {
     background-color: #007acc; /* Xanh biển đậm */
     color: white;
     text-align: center;
     padding: 15px 0;
     margin-top: 20px;
-    position: relative;
-    bottom: 0;
+    position: fixed; /* Sửa từ relative thành fixed */
+    bottom: 0; /* Bám vào đáy màn hình */
     width: 100%;
-  }
+    left: 0; /* Đảm bảo footer chiếm toàn bộ chiều ngang */
+}

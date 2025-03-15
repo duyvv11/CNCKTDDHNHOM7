@@ -19,6 +19,8 @@ function App() {
 
 function MainLayout() {
   const { isLoggedIn, role, logout } = useAuth();
+  console.log("🔹 Trạng thái đăng nhập:", isLoggedIn);
+  console.log("🔹 Quyền người dùng:", role);
 
   return (
     <div className="container">
@@ -33,9 +35,9 @@ function MainLayout() {
           ) : (
             <>
               {/* Phân quyền cho cửa hàng */}
-              {role === "store" && <Link to="/orders">Quản lý đơn hàng</Link>}
+              {role === "store" && <Link to="/create-order">Store</Link>}
               {/* Phân quyền cho shipper */}
-              {role === "shipper" && <Link to="/orders">Đơn giao hàng</Link>}
+              {role === "shipper" && <Link to="/orders">Shiper</Link>}
               <Link to="/orders">Danh sách đơn</Link>
               <Link to="/create-order">Tạo đơn hàng</Link>
               <button onClick={logout} className="logout-btn">Đăng xuất</button>
@@ -46,7 +48,7 @@ function MainLayout() {
 
       <div className="content">
         <Routes>
-          <Route path="/" />
+          <Route path="/" element={<Navigate to={isLoggedIn ? "/orders" : "/login"} />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/orders" element={<PrivateRoute element={<Orders />} />} />
@@ -58,26 +60,27 @@ function MainLayout() {
       </div>
 
       <footer className="footer">
-        <p>© 2025 Nhóm 7 - Hệ thống theo dõi đơn hàng</p>
+        <p>© 2025 Nhóm 7 theo dõi đơn hàng</p>
       </footer>
     </div>
   );
 }
 
+// PrivateRoute để kiểm tra quyền truy cập
 function PrivateRoute({ element, requiredRole }) {
   const { isLoggedIn, role } = useAuth();
 
   if (!isLoggedIn) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" />;  // Nếu chưa đăng nhập, chuyển hướng tới trang đăng nhập
   }
 
   // Kiểm tra quyền truy cập theo role
   if (requiredRole && role !== requiredRole) {
+    console.log("Required role:", requiredRole, "User role:", role);
     return <Navigate to="/orders" />;  // Điều hướng người dùng nếu role không đúng
   }
 
-  return element;
+  return element;  // Nếu có quyền truy cập, render component
 }
-
 
 export default App;

@@ -3,6 +3,8 @@ import axios from "axios";
 
 const CreateOrder = () => {
   const [items, setItems] = useState([{ name: "", quantity: 1 }]);
+  const [address, setAddress] = useState("");  // ✅ Thêm địa chỉ
+  const [phone, setPhone] = useState("");      // ✅ Thêm số điện thoại
 
   const handleAddItem = () => {
     setItems([...items, { name: "", quantity: 1 }]);
@@ -14,67 +16,45 @@ const CreateOrder = () => {
     setItems(newItems);
   };
 
-  // ✅ Hàm gọi API tạo đơn hàng (tích hợp refresh token)
+  // ✅ Hàm gọi API tạo đơn hàng
   const handleCreateOrder = async () => {
     try {
-      let token = localStorage.getItem("accessToken"); // 🔹 Lấy token từ localStorage
+      const token = localStorage.getItem("token");
+      console.log("🔹 Token từ localStorage:", token);
+      if (!token) {
+        console.error("❌ Không có token, yêu cầu bị từ chối!");
+        alert("Bạn cần đăng nhập để tạo đơn hàng!");
+        return;
+      }
 
       const requestData = {
         itemNames: items.map((item) => item.name),
         itemQuantities: items.map((item) => Number(item.quantity)),
+        address,  // ✅ Gửi địa chỉ
+        phone,    // ✅ Gửi số điện thoại
       };
 
       console.log("🔹 Sending request:", requestData);
 
       const response = await axios.post("http://localhost:5000/api/orders/create", requestData, {
-        headers: { Authorization: `Bearer ${token}` }, // 🔥 Thêm token vào header
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
 
       console.log("✅ Response:", response.data);
       alert("Tạo đơn hàng thành công!");
     } catch (err) {
       console.error("❌ Lỗi tạo đơn hàng:", err.response?.data || err);
-
-      if (err.response?.status === 401) {
-        // Nếu token hết hạn, gọi refresh token
-        console.log("🔄 Token hết hạn, đang làm mới...");
-        const newToken = await refreshAccessToken();
-
-        if (newToken) {
-          console.log("✅ Token mới đã cập nhật, gửi lại request...");
-          return handleCreateOrder(); // Gửi lại request
-        } else {
-          alert("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại!");
-        }
-      } else {
-        alert("Lỗi tạo đơn hàng!");
-      }
-    }
-  };
-
-  // ✅ Hàm gọi API để lấy Access Token mới từ Refresh Token
-  const refreshAccessToken = async () => {
-    try {
-      const refreshToken = localStorage.getItem("refreshToken");
-      if (!refreshToken) return null;
-
-      const response = await axios.post("http://localhost:5000/api/auth/refresh-token", { refreshToken });
-
-      const newAccessToken = response.data.accessToken;
-      localStorage.setItem("accessToken", newAccessToken); // Cập nhật token mới
-
-      return newAccessToken;
-    } catch (err) {
-      console.error("❌ Lỗi refresh token:", err.response?.data || err);
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("refreshToken");
-      return null;
+      alert("Lỗi tạo đơn hàng!");
     }
   };
 
   return (
     <div>
       <h2>Tạo Đơn Hàng</h2>
+
+      {/* Nhập danh sách sản phẩm */}
       {items.map((item, index) => (
         <div key={index}>
           <input
@@ -91,7 +71,29 @@ const CreateOrder = () => {
           />
         </div>
       ))}
+
       <button onClick={handleAddItem}>Thêm sản phẩm</button>
+
+      {/* Nhập địa chỉ */}
+      <div>
+        <input
+          type="text"
+          placeholder="Nhập địa chỉ giao hàng"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+        />
+      </div>
+
+      {/* Nhập số điện thoại */}
+      <div>
+        <input
+          type="text"
+          placeholder="Nhập số điện thoại"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+      </div>
+
       <button onClick={handleCreateOrder}>Tạo đơn</button>
     </div>
   );
