@@ -13,6 +13,8 @@ contract DeliveryTracker {
         uint256 id;
         address store;
         address deliveryPerson;
+        string recipientAddress;
+        string recipientPhone;
         OrderStatus status;
         Item[] items;
     }
@@ -20,28 +22,35 @@ contract DeliveryTracker {
     mapping(uint256 => Order) public orders;
     uint256 public nextOrderId;
 
-    event OrderCreated(uint256 orderId, address store);
+    event OrderCreated(uint256 orderId, address store, string recipientAddress, string recipientPhone);
     event OrderPickedUp(uint256 orderId, address deliveryPerson);
     event OrderDelivered(uint256 orderId);
 
-    function createOrder(string[] memory itemNames, uint256[] memory itemQuantities) external {
+    function createOrder(
+        string[] memory itemNames, 
+        uint256[] memory itemQuantities, 
+        string memory recipientAddress, 
+        string memory recipientPhone
+    ) external {
         require(itemNames.length == itemQuantities.length, "Mismatched items and quantities");
 
         Order storage newOrder = orders[nextOrderId];
         newOrder.id = nextOrderId;
         newOrder.store = msg.sender;
         newOrder.deliveryPerson = address(0);
+        newOrder.recipientAddress = recipientAddress;
+        newOrder.recipientPhone = recipientPhone;
         newOrder.status = OrderStatus.Created;
 
         for (uint256 i = 0; i < itemNames.length; i++) {
             newOrder.items.push(Item(itemNames[i], itemQuantities[i]));
         }
 
-        emit OrderCreated(nextOrderId, msg.sender);
+        emit OrderCreated(nextOrderId, msg.sender, recipientAddress, recipientPhone);
         nextOrderId++;
     }
 
-    function pickUpOrder(uint256 orderId) external {
+        function pickUpOrder(uint256 orderId) external {
         require(orders[orderId].status == OrderStatus.Created, "Order not available for pickup");
         orders[orderId].deliveryPerson = msg.sender;
         orders[orderId].status = OrderStatus.InTransit;
@@ -55,3 +64,4 @@ contract DeliveryTracker {
         emit OrderDelivered(orderId);
     }
 }
+
