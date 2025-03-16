@@ -1,10 +1,14 @@
 import { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
 
 const CreateOrder = () => {
   const [items, setItems] = useState([{ name: "", quantity: 1 }]);
-  const [address, setAddress] = useState("");  // ✅ Thêm địa chỉ
-  const [phone, setPhone] = useState("");      // ✅ Thêm số điện thoại
+  const [recipientAddress, setRecipientAddress] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
+  const [customerEmail, setCustomerEmail] = useState("");
+
+  const navigate = useNavigate(); // ✅ Hook điều hướng
 
   const handleAddItem = () => {
     setItems([...items, { name: "", quantity: 1 }]);
@@ -16,37 +20,37 @@ const CreateOrder = () => {
     setItems(newItems);
   };
 
-  // ✅ Hàm gọi API tạo đơn hàng
   const handleCreateOrder = async () => {
     try {
       const token = localStorage.getItem("token");
-      console.log("🔹 Token từ localStorage:", token);
       if (!token) {
-        console.error("❌ Không có token, yêu cầu bị từ chối!");
         alert("Bạn cần đăng nhập để tạo đơn hàng!");
         return;
       }
 
+      const payload = JSON.parse(atob(token.split(".")[1])); 
+      const storeEmail = payload.email; 
+
       const requestData = {
         itemNames: items.map((item) => item.name),
         itemQuantities: items.map((item) => Number(item.quantity)),
-        address,  // ✅ Gửi địa chỉ
-        phone,    // ✅ Gửi số điện thoại
+        recipientAddress,
+        recipientPhone,
+        customerEmail,
+        storeEmail,
       };
 
-      console.log("🔹 Sending request:", requestData);
-
       const response = await axios.post("http://localhost:5000/api/orders/create", requestData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
-      console.log("✅ Response:", response.data);
       alert("Tạo đơn hàng thành công!");
+      console.log("✅ Response:", response.data);
+
+      navigate("/orders"); // ✅ Chuyển sang trang danh sách đơn hàng
     } catch (err) {
-      console.error("❌ Lỗi tạo đơn hàng:", err.response?.data || err);
       alert("Lỗi tạo đơn hàng!");
+      console.error("❌ Lỗi tạo đơn hàng:", err.response?.data || err);
     }
   };
 
@@ -54,7 +58,6 @@ const CreateOrder = () => {
     <div>
       <h2>Tạo Đơn Hàng</h2>
 
-      {/* Nhập danh sách sản phẩm */}
       {items.map((item, index) => (
         <div key={index}>
           <input
@@ -74,23 +77,30 @@ const CreateOrder = () => {
 
       <button onClick={handleAddItem}>Thêm sản phẩm</button>
 
-      {/* Nhập địa chỉ */}
       <div>
         <input
           type="text"
           placeholder="Nhập địa chỉ giao hàng"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
+          value={recipientAddress}
+          onChange={(e) => setRecipientAddress(e.target.value)}
         />
       </div>
 
-      {/* Nhập số điện thoại */}
       <div>
         <input
           type="text"
           placeholder="Nhập số điện thoại"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          value={recipientPhone}
+          onChange={(e) => setRecipientPhone(e.target.value)}
+        />
+      </div>
+
+      <div>
+        <input
+          type="email"
+          placeholder="Nhập email khách hàng"
+          value={customerEmail}
+          onChange={(e) => setCustomerEmail(e.target.value)}
         />
       </div>
 
