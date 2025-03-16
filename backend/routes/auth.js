@@ -18,28 +18,29 @@ router.use(
 
 // Đăng ký (Không băm mật khẩu)
 router.post("/register", async (req, res) => {
-  console.log("da goi duoc ham dang ky :");
+  console.log("🔹 API /register được gọi!"); // Debug log để kiểm tra API có hoạt động không
+  const { email, password, role } = req.body;
+
+  const validRoles = ["store", "shipper", "customer"];
+  if (!validRoles.includes(role)) {
+    return res.status(400).json({ message: "Role không hợp lệ" }); // ✅ Thêm `return`
+  }
+
   try {
-    const { email, password, role } = req.body;
-
-    if (!email || !password || !role) {
-      return res.status(400).json({ message: "Vui lòng nhập đủ thông tin" });
-    }
-
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "Email đã tồn tại" });
+      return res.status(400).json({ message: "Email đã tồn tại" }); // ✅ Thêm `return`
     }
 
-    const user = new User({ email, password, role });
-    await user.save();
-
-    res.json({ message: "Đăng ký thành công!" });
+    const newUser = new User({ email, password, role });
+    await newUser.save();
+    return res.status(201).json({ message: "Đăng ký thành công" }); // ✅ Đảm bảo có `return`
   } catch (error) {
-    console.error("Lỗi đăng ký:", error);
-    res.status(500).json({ message: "Lỗi server" });
+    console.error("❌ Lỗi server:", error); // Log lỗi chi tiết
+    return res.status(500).json({ message: "Lỗi server" }); // ✅ Đảm bảo có `return`
   }
 });
+
 
 // Đăng nhập (Dùng cả Session và JWT)
 router.post("/login", async (req, res) => {
@@ -63,9 +64,10 @@ router.post("/login", async (req, res) => {
  
     // Tạo JWT token mà không có `expiresIn` (không giới hạn thời gian sống)
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { userId: user._id, role: user.role, email: user.email }, // ✅ Thêm email vào token
       process.env.JWT_SECRET
     );
+    
     
 
     // Trả về token và thông tin người dùng
