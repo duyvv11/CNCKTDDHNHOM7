@@ -9,7 +9,6 @@ import CustomerOrders from "./pages/CustomerOrders";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import "./App.css";
 
-
 function App() {
   return (
     <AuthProvider>
@@ -28,7 +27,9 @@ function MainLayout() {
   return (
     <div className="container">
       <nav className="navbar">
-        <h1 className="logo">🚚 Theo dõi đơn hàng</h1>
+        <h1 className="logo">
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>🚚 Theo dõi đơn hàng</Link>
+        </h1>
         <div className="nav-links">
           <span className="user-role">Vai trò: {role}</span>
           {!isLoggedIn ? (
